@@ -8,7 +8,7 @@ function App() { // 웹페이지 하나를 모두 담을 함수, 이 안에 버�
     //버튼을 눌렀을 때 실행시킬 함수
 
     try {
-      const response = await fetch('http:localhost:3000/'); // 3000은 프론트 포트, 4000은 백엔드 포트
+      const response = await fetch('http://localhost:4000/'); // 3000은 프론트 포트, 4000은 백엔드 포트
       const data = await response.text(); // 서버가 응답한 글자를 저장하는 변수, text()는 문자 그대로를 받아올 때 사용
       setMessage(data); // 받은 글자를 data에 저장하는 코드
     } catch (error) { // 만약 오류 났을 때 실행시킬 코드, if의 else 부분이랑 비슷한 느낌
