@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+// UserList.jsx
+import React, { useEffect, useState } from 'react'; // useEffect는 자동 센서처럼 특정 상태가 바뀌면 자동으로 특정 코드 실행
 
 const UserList = () => {
   const [users, setUsers] = useState([]);         // 사용자 목록
@@ -12,14 +13,17 @@ const UserList = () => {
         setUsers(data);
       } catch (err) {
         console.error('유저 목록 불러오기 실패:', err);
-      } finally {
+      } finally { // 에러가 나든 안 나든 무조건 실행시킬 코드
         setLoading(false);
       }
     };
 
     fetchUsers();
-  }, []);
+  }, []); // [] 이 배열이 비어있으면 처음 한 번만 실행하고, 변수 들어가 있으면 그 변수가 바뀔 때마다 실행됨
 
+
+	// return은 코드 전체 함수가 화면에 무엇을 보여줄지 반환하는 것, HTML과 매우 유사함
+	// input은 입력받는 박스 만드는 역할
   return (
     <div style={{ padding: '40px', textAlign: 'center' }}>
       <h2>사용자 목록</h2>
@@ -46,4 +50,5 @@ const UserList = () => {
   );
 };
 
+// App 컴포넌트를 외부에서도 사용할 수 있게 export (기본 export)
 export default UserList;
