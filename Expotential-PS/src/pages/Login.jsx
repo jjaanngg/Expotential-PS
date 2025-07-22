@@ -13,7 +13,8 @@ const Login = () => {<div className=""></div>
 		// 변수 선언하고 변수 값 바꾸는 함수 선언하고 반복
     const handleLogin = async () => { // await 사용할거라 async 조건 추가
 		    // 여기서 fetch는 브라우저에서 해당 서버에 요청을 보내는 함수, GEt이나 POSt. 여기서는 POST임
-        const res = await fetch('http://localhost:4000/login', {
+        try {
+          const res = await fetch('http://localhost:4000/login', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({email, password}),
@@ -21,11 +22,18 @@ const Login = () => {<div className=""></div>
 
         const data = await res.json();
         if (res.ok) {
+          localStorage.setItem('token', data.token);
           alert('Login Completed');
           alert(data.message);
           navigate('/'); // 로그인 성공 시 홈으로 이동.
         }
-        else setMessage('Login Fail: Wrong Password');
+        else {
+          setMessage('Login Fail: Wrong Password');
+        }
+      }  catch (error) {
+          console.error('Login error:', error);
+          setMessage('Login 요청 중 오류 발생');
+        }
     };
 		// return은 코드 전체 함수가 화면에 무엇을 보여줄지 반환하는 것, HTML과 매우 유사함
 		// input은 입력받는 박스 만드는 역할

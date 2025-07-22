@@ -1,34 +1,61 @@
 // UserList.jsx
-import React, { useEffect, useState } from 'react'; // useEffect는 자동 센서처럼 특정 상태가 바뀌면 자동으로 특정 코드 실행
+import React, { useEffect, useState } from 'react';
 
 const UserList = () => {
   const [users, setUsers] = useState([]);         // 사용자 목록
   const [loading, setLoading] = useState(true);   // 로딩 상태
+  const [error, setError] = useState(null);       // 오류 메시지
 
   useEffect(() => {
     const fetchUsers = async () => {
-      try {
-        const res = await fetch('http://localhost:4000/users');
-        const data = await res.json();
-        setUsers(data);
-      } catch (err) {
-        console.error('유저 목록 불러오기 실패:', err);
-      } finally { // 에러가 나든 안 나든 무조건 실행시킬 코드
+      const token = localStorage.getItem('token'); // 저장된 JWT 토큰 불러오기
+
+      if (!token) {
+        setError('로그인이 필요합니다.');
         setLoading(false);
+        return;
+      }
+
+      try {
+        const res = await fetch('http://localhost:4000/users', {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`  // JWT 토큰을 Authorization 헤더에 포함
+          }
+        });
+
+        if (!res.ok) {
+          if (res.status === 401) {
+            setError('인증이 필요합니다.');
+          } else if (res.status === 403) {
+            setError('접근 권한이 없습니다.');
+          } else {
+            setError('사용자 정보를 불러오는 데 실패했습니다.');
+          }
+          return;
+        }
+
+        const data = await res.json();
+        setUsers(data); // 사용자 목록 상태에 저장
+
+      } catch (err) {
+        console.error('사용자 목록 요청 중 오류:', err);
+        setError('서버와의 연결 중 오류 발생');
+      } finally {
+        setLoading(false); // 성공 여부와 관계없이 로딩 종료
       }
     };
 
-    fetchUsers();
-  }, []); // [] 이 배열이 비어있으면 처음 한 번만 실행하고, 변수 들어가 있으면 그 변수가 바뀔 때마다 실행됨
+    fetchUsers(); // 컴포넌트 마운트 시 1회 실행
+  }, []);
 
-
-	// return은 코드 전체 함수가 화면에 무엇을 보여줄지 반환하는 것, HTML과 매우 유사함
-	// input은 입력받는 박스 만드는 역할
   return (
     <div style={{ padding: '40px', textAlign: 'center' }}>
       <h2>사용자 목록</h2>
       {loading ? (
         <p>불러오는 중...</p>
+      ) : error ? (
+        <p style={{ color: 'red' }}>{error}</p>
       ) : (
         <ul style={{ listStyle: 'none', padding: 0 }}>
           {users.map((user, idx) => (
@@ -50,5 +77,4 @@ const UserList = () => {
   );
 };
 
-// App 컴포넌트를 외부에서도 사용할 수 있게 export (기본 export)
 export default UserList;
