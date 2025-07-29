@@ -5,7 +5,7 @@ const router = express.Router();
 
 router.get('/', async (req, res) => {
     try {
-        const problem = await Problem.find().sort({prblemId: 1});
+        const problem = await Problem.find().sort({problemId: 1});
         res.status(200).json(problems);
     } catch (err) {
         console.error('문제 리스트 조회 실패:', err);
