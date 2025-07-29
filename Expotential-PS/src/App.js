@@ -12,6 +12,7 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import UserList from './pages/UserList';
+import ProblemList from './pages/ProblemList';
 
 // 전체 웹사이트의 기본 구조를 정의하며, 라우터를 포함
 function App() {
@@ -25,6 +26,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/users" element={<UserList/>} />
+        <Route path="/problems" element={<ProblemList/>} />
       </Routes>
     </BrowserRouter>
   );

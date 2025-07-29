@@ -14,10 +14,11 @@ const Login = () => {<div className=""></div>
     const handleLogin = async () => { // await 사용할거라 async 조건 추가
 		    // 여기서 fetch는 브라우저에서 해당 서버에 요청을 보내는 함수, GEt이나 POSt. 여기서는 POST임
         try {
-          const res = await fetch('http://localhost:4000/login', {
+          const res = await fetch('/login', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({email, password}),
+            credentials: 'include', // 추가된 줄
         });
 
         const data = await res.json();

@@ -17,11 +17,12 @@ const UserList = () => {
       }
 
       try {
-        const res = await fetch('http://localhost:4000/users', {
+        const res = await fetch('/users', {
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`  // JWT 토큰을 Authorization 헤더에 포함
-          }
+          },
+          credentials: 'include', // 추가된 줄
         });
 
         if (!res.ok) {

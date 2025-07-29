@@ -1,0 +1,26 @@
+[
+  {
+    "problemId": 1000,
+    "titleKo": "A+B",
+    "tier": 1,
+    "solvedCount": 123456
+  },
+  {
+    "problemId": 1001,
+    "titleKo": "입출력",
+    "tier": 1,
+    "solvedCount": 234567
+  },
+  {
+    "problemId": 1002,
+    "titleKo": "문자열 처리",
+    "tier": 2,
+    "solvedCount": 101112
+  },
+  {
+    "problemId": 1003,
+    "titleKo": "구간 합",
+    "tier": 3,
+    "solvedCount": 98765
+  }
+]

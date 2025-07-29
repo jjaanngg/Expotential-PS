@@ -27,11 +27,14 @@ router.post('/', async (req, res) => {
         id: user._id,
         nickname: user.nickname,
       },
-      'your_jwt_secret', // 🔒 실제 운영 시 환경변수로 설정하세요
+      process.env.JWT_SECRET, // 🔒 실제 운영 시 환경변수로 설정하세요
       { expiresIn: '2h' } // 유효 시간
     );
-
-    res.status(200).json({ token });
+    // message를 줘야 login.jsx의 alert(data.message);에서 메세지 출력 가능
+    res.status(200).json({
+      message: `환영합니다, ${user.nickname}님!`,
+      token
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: '서버 오류' });

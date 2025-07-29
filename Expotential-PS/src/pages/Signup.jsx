@@ -23,7 +23,7 @@ const Signup = () => {
 		// 일단 시도해보는 녀석
 		// 여기서 fetch는 브라우저에서 해당 서버에 요청을 보내는 함수, GEt이나 POSt. 여기서는 POST임
     try {
-      const res = await fetch('http://localhost:4000/signup', {
+      const res = await fetch('/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ nickname, email, password }),

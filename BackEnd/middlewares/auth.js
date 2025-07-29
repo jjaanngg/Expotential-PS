@@ -15,7 +15,7 @@ const authMiddleware = (req, res, next) => {
 
   try {
     // 토큰 검증 및 해독
-    const decoded = jwt.verify(token, 'your_jwt_secret'); // 실제 운영환경에서는 환경변수로 대체
+    const decoded = jwt.verify(token, process.env.JWT_SECRET); // 실제 운영환경에서는 환경변수로 대체
     req.user = decoded; // 요청 객체에 사용자 정보 추가
     next(); // 다음 미들웨어 또는 라우터로 진행
   } catch (err) {
