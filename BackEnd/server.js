@@ -1,5 +1,5 @@
 // ※ 기본 셋팅
-import problemRoute from './routes/problem.js';
+import problemRoute from './routes/problems.js';
 import express from 'express';                  // express 라이브러리 불러오기
 import cors from 'cors';                        // Cross Origin Resource Sharing : 보통 서로 다른 도메인 간에 요청이 보안상의 이유로 막혀 있는데, 이를 해체하기 위해서 가져옴
 import mongoose from 'mongoose';                // Node.js 앱에서 MongoDB와 쉽게 통신할 수 있게 도와주는 라이브러리
