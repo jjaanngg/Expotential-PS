@@ -8,6 +8,9 @@ import loginRoute from './routes/login.js';
 import auth from './middlewares/auth.js';
 import usersRoute from './routes/users.js';
 import dotenv from 'dotenv';                    // .env파일을 읽을 수 있는 라이브러리
+import setList from './routes/setList.js';
+import setDetailRoutes from './routes/setDetail.js';
+import setCreate from './routes/setCreate.js';
 
 dotenv.config();                    
 const app = express();               //  express 앱 객체 생성
@@ -18,8 +21,12 @@ app.use(cors({
   credentials: true, // 브라우저가 쿠키나 인증 정보를 서버에 함께 보내는 것을 허용하겠다는 의미
 }));
 app.use(express.json());             // JSON body 파싱하기 위해서 설정
-app.use('/signup', signupRoute);     // signup으로 들어왔을 때, 규칙정의 (회원가입 라우터로 인계)
+app.use('/signup', signupRoute); 
+app.use('/login', loginRoute); 
 app.use('/api/problems', problemRoute);
+app.use('/api/sets', setList); 
+app.use('/api/sets', setDetailRoutes); 
+app.use('/api/sets', setCreate); 
 
 // ※ MongoDB 연결 (단순화)
 // - mongodb://127.0.0.1:27017/DB이름 -> .env에서 가져옴

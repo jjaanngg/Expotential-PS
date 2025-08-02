@@ -65,7 +65,7 @@ const SetDetail = () => {
           </thead>
           <tbody>
             {problems.map(p => (
-              <tr key={p.problemId}>
+              <tr key={p.problemId || p._id}>
                 <td>{p.problemId}</td>
                 <td>{p.titleKo}</td>
                 <td>{tierText(p.tier)}</td>
