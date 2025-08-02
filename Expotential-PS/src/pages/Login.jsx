@@ -13,7 +13,12 @@ const Login = () => {<div className=""></div>
 		// 변수 선언하고 변수 값 바꾸는 함수 선언하고 반복
     const handleLogin = async () => { // await 사용할거라 async 조건 추가
 		    // 여기서 fetch는 브라우저에서 해당 서버에 요청을 보내는 함수, GEt이나 POSt. 여기서는 POST임
+<<<<<<< Updated upstream:Expotential-PS/src/pages/Login.jsx
         const res = await fetch('http://localhost:4000/login', {
+=======
+        try {
+          const res = await fetch('http://127.0.0.1:4000/login', {
+>>>>>>> Stashed changes:FrontEnd/src/pages/Login.jsx
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({email, password}),

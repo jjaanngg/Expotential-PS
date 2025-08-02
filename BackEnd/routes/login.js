@@ -8,6 +8,12 @@ const router = express.Router();
 router.post('/', async (req, res) => {
   const { email, password } = req.body;
 
+  // 필수값 체크 추가
+  if (!email || !password) {
+    console.log("이메일 또는 비밀번호가 비어 있습니다.");
+    return res.status(400).json({ message: '이메일 또는 비밀번호가 비어 있습니다.' });
+  }
+
   try {
     // 이메일로 사용자 찾기
     const user = await User.findOne({ email });
