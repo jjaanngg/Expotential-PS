@@ -1,5 +1,5 @@
 // src/pages/SetDetail.jsx
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 
@@ -12,14 +12,15 @@ const SetDetail = () => {
   const [problems, setProblems] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // 보상 버튼 상태
-  const [loadingIds, setLoadingIds] = useState([]);     // 제출 중인 problemId 목록
-  const [submittedIds, setSubmittedIds] = useState([]); // 완료된 problemId 목록
-  const [errorMsg, setErrorMsg] = useState('');         // 상단 에러 메시지
+  // ✅ 변경됨: 보상 처리용 상태 제거 → 세트 전체 새로고침 상태로 변경
+  const [refreshing, setRefreshing] = useState(false);   // 새로고침 버튼 로딩 상태
+  const [errorMsg, setErrorMsg] = useState('');
+  const [solvedMap, setSolvedMap] = useState({});        // { problemId: true/false }
 
   // 세트 상세 로드
   useEffect(() => {
     setErrorMsg('');
+    setLoading(true);
     axios.get(`/api/sets/${id}`)
       .then(res => {
         setTitle(res.data.title || '');
@@ -32,7 +33,7 @@ const SetDetail = () => {
       .finally(() => setLoading(false));
   }, [id]);
 
-  // 티어 텍스트 변환
+  // 티어 텍스트 변환 (변경 없음)
   const tierText = (tier) => {
     const groups = [
       { name: 'Bronze', range: [1, 5] },
@@ -50,72 +51,53 @@ const SetDetail = () => {
     return 'Unrated';
   };
 
-  // 보상 받기 처리
-  const handleClaim = async (problemId) => {
-    setErrorMsg('');
+  // ✅ 변경됨: problemId 단위 보상 버튼 → 세트 전체 problemId 추출
+  const allProblemIds = useMemo(
+    () => problems.map(p => p.problemId).filter(Boolean),
+    [problems]
+  );
 
-    // 1) 토큰 확인
+  // ✅ 변경됨: handleClaim → handleRefreshAll
+  // 세트 전체 새로고침 (모든 문제 풀이 여부 확인)
+  const handleRefreshAll = async () => {
+    setErrorMsg('');
     const token = localStorage.getItem('token');
     if (!token) {
       alert('로그인이 필요합니다.');
       navigate('/login');
       return;
     }
-
-    // 2) 중복/로딩 가드
-    if (loadingIds.includes(problemId) || submittedIds.includes(problemId)) return;
-
-    // 3) 로딩 표시
-    setLoadingIds(prev => [...prev, problemId]);
+    if (!allProblemIds.length) return;
 
     try {
+      setRefreshing(true);
+      // ✅ 변경됨: /api/solve-check (문제 단일) → /api/solve-status (세트 전체)
       const res = await axios.post(
-        '/api/solve-check',
-        { problemId }, // 유저 식별은 서버에서 JWT로 처리
+        '/api/solve-status',
+        { problems: allProblemIds },
         { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } }
       );
 
-      if (res.status >= 200 && res.status < 300) {
-        setSubmittedIds(prev => [...prev, problemId]);
+      // ✅ 변경됨: 응답 파싱 로직 (results 배열 기반)
+      const resultArray = res?.data?.results ?? [];
+      const next = {};
+      for (const r of resultArray) {
+        if (r && typeof r.problemId === 'number') {
+          next[r.problemId] = !!r.solved;
+        }
       }
+      setSolvedMap(next);
     } catch (err) {
-      if (err?.response?.status === 409) {
-        // 이미 제출됨 → UX상 완료 처리
-        setSubmittedIds(prev => [...prev, problemId]);
-      } else {
-        console.error('보상 등록 실패:', err);
-        setErrorMsg('보상 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
-      }
+      console.error('세트 새로고침 실패:', err);
+      setErrorMsg('풀이 여부 확인 중 오류가 발생했습니다.');
     } finally {
-      setLoadingIds(prev => prev.filter(id => id !== problemId));
+      setRefreshing(false);
     }
-  };
-
-  // 버튼 렌더링(상태에 따라 텍스트/스타일 제어)
-  const renderClaimButton = (problemId) => {
-    const isLoading = loadingIds.includes(problemId);
-    const isDone = submittedIds.includes(problemId);
-
-    return (
-      <button
-        onClick={() => handleClaim(problemId)}
-        disabled={isLoading || isDone}
-        style={{
-          padding: '6px 12px',
-          borderRadius: '6px',
-          border: '1px solid #ccc',
-          cursor: isLoading || isDone ? 'not-allowed' : 'pointer',
-          background: isDone ? '#d1f7d6' : isLoading ? '#f0f0f0' : '#f5f5f5'
-        }}
-      >
-        {isDone ? '완료됨' : isLoading ? '처리 중...' : '보상 받기'}
-      </button>
-    );
   };
 
   return (
     <div style={{ padding: '40px', textAlign: 'center' }}>
-      {/* 뒤로가기 */}
+      {/* 뒤로가기 버튼 (변경 없음) */}
       <button onClick={() => navigate('/sets')} style={{
         marginBottom: '20px',
         padding: '8px 16px',
@@ -127,44 +109,72 @@ const SetDetail = () => {
         ← 세트 목록으로 돌아가기
       </button>
 
-      {/* 제목 & 에러 */}
       <h2>{title}</h2>
       {errorMsg && <p style={{ color: 'crimson' }}>{errorMsg}</p>}
 
-      {/* 로딩/테이블 */}
+      {/* ✅ 변경됨: 개별 버튼 → 세트 전체 새로고침 버튼 */}
+      {!loading && (
+        <div style={{ marginBottom: 16 }}>
+          <button
+            onClick={handleRefreshAll}
+            disabled={refreshing || allProblemIds.length === 0}
+            style={{
+              padding: '8px 16px',
+              borderRadius: '6px',
+              border: '1px solid #bbb',
+              cursor: refreshing ? 'not-allowed' : 'pointer',
+              background: refreshing ? '#f0f0f0' : '#e8f4ff',
+              fontWeight: 600
+            }}
+          >
+            {refreshing ? '확인 중...' : '세트 전체 새로고침'}
+          </button>
+        </div>
+      )}
+
+      {/* ✅ 변경됨: 표의 마지막 컬럼 (보상 버튼 → 풀이 상태 표시) */}
       {loading ? (
         <p>문제 불러오는 중...</p>
       ) : (
-        <table style={{ margin: '0 auto', borderCollapse: 'collapse', minWidth: 720 }}>
+        <table style={{ margin: '0 auto', borderCollapse: 'collapse', minWidth: 800 }}>
           <thead>
             <tr>
               <th style={{ padding: 8, borderBottom: '1px solid #ddd' }}>ID</th>
               <th style={{ padding: 8, borderBottom: '1px solid #ddd' }}>제목</th>
               <th style={{ padding: 8, borderBottom: '1px solid #ddd' }}>티어</th>
               <th style={{ padding: 8, borderBottom: '1px solid #ddd' }}>푼 사람 수</th>
-              <th style={{ padding: 8, borderBottom: '1px solid #ddd' }}>보상</th>
+              <th style={{ padding: 8, borderBottom: '1px solid #ddd' }}>상태</th>
             </tr>
           </thead>
           <tbody>
-            {problems.map(p => (
-              <tr key={p.problemId || p._id}>
-                <td style={{ padding: 8, borderBottom: '1px solid #f0f0f0' }}>{p.problemId}</td>
-                <td style={{ padding: 8, borderBottom: '1px solid #f0f0f0' }}>{p.titleKo}</td>
-                <td style={{ padding: 8, borderBottom: '1px solid #f0f0f0' }}>{tierText(p.tier)}</td>
-                <td style={{ padding: 8, borderBottom: '1px solid #f0f0f0' }}>{p.solvedCount?.toLocaleString?.() ?? p.solvedCount}</td>
-                <td style={{ padding: 8, borderBottom: '1px solid #f0f0f0' }}>
-                  {renderClaimButton(p.problemId)}
-                </td>
-              </tr>
-            ))}
+            {problems.map(p => {
+              const solved = solvedMap[p.problemId];
+              return (
+                <tr key={p.problemId || p._id}>
+                  <td style={{ padding: 8, borderBottom: '1px solid #f0f0f0' }}>{p.problemId}</td>
+                  <td style={{ padding: 8, borderBottom: '1px solid #f0f0f0' }}>{p.titleKo}</td>
+                  <td style={{ padding: 8, borderBottom: '1px solid #f0f0f0' }}>{tierText(p.tier)}</td>
+                  <td style={{ padding: 8, borderBottom: '1px solid #f0f0f0' }}>{p.solvedCount?.toLocaleString?.() ?? p.solvedCount}</td>
+                  <td style={{ padding: 8, borderBottom: '1px solid #f0f0f0' }}>
+                    {solved === true ? (
+                      <span style={{ color: '#14804a', fontWeight: 700 }}>해결됨</span>
+                    ) : solved === false ? (
+                      <span style={{ color: '#8a0000', fontWeight: 700 }}>미해결</span>
+                    ) : (
+                      <span style={{ color: '#666' }}>-</span>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       )}
 
-      {/* 완료 요약 */}
+      {/* ✅ 변경됨: 완료 카운트 → “확인된 문제 수”로 용도 변경 */}
       {!loading && problems.length > 0 && (
         <p style={{ marginTop: 16 }}>
-          완료: <b>{submittedIds.length}</b> / {problems.length}
+          확인된 문제 수: <b>{Object.keys(solvedMap).length}</b> / {problems.length}
         </p>
       )}
     </div>

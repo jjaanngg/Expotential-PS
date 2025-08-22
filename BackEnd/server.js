@@ -11,6 +11,7 @@ import dotenv from 'dotenv';                    // .env파일을 읽을 수 있�
 import setList from './routes/setList.js';
 import setDetailRoutes from './routes/setDetail.js';
 import setCreate from './routes/setCreate.js';
+import solveCheckRouter from "./routes/solveCheck.js";
 
 dotenv.config();                    
 const app = express();               //  express 앱 객체 생성
@@ -26,7 +27,8 @@ app.use('/login', loginRoute);
 app.use('/api/problems', problemRoute);
 app.use('/api/sets', setList); 
 app.use('/api/sets', setDetailRoutes); 
-app.use('/api/sets', setCreate); 
+app.use('/api/sets', setCreate);
+app.use("/api/solve-check", solveCheckRouter);
 
 // ※ MongoDB 연결 (단순화)
 // - mongodb://127.0.0.1:27017/DB이름 -> .env에서 가져옴

@@ -10,7 +10,11 @@ const Signup = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
+  const [solved_id, setSolved_id] = useState('');
+  const [atcoder_id, setAtcoder_id] = useState('');
+  const [cf_id, setCF_id] = useState('');
   const navigate = useNavigate();
+
   //Signup 안에서 useNavigate 사용되기 때문에 무조건 변수 선언 부분에 넣어줘야 함
 
 	// 얘도 변수 선언이지만 async를 쓰면 서버 응답 기다릴 수 있는 await 사용 가능해서 씀(비동기 함수)
@@ -26,7 +30,7 @@ const Signup = () => {
       const res = await fetch('/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nickname, email, password }),
+        body: JSON.stringify({ nickname, email, password, solved_id, atcoder_id, cf_id }) ,
       });
 
       const data = await res.json();
@@ -75,6 +79,30 @@ const Signup = () => {
         value={password}
         onChange={(e) => setPassword(e.target.value)}
         style={{ marginBottom: '30px', width: '200px' }}
+      />
+
+      <input
+        type="solved_id"
+        placeholder="Solved.ac 아이디"
+        value={solved_id}
+        onChange={(e) => setSolved_id(e.target.value)}
+        style={{marginBottom: '10px', width: '200px'}}
+      />
+
+      <input
+        type="atcoder_id"
+        placeholder="Atcoder 아이디"
+        value={atcoder_id}
+        onChange={(e) => setAtcoder_id(e.target.value)}
+        style={{marginBottom: '10px', width: '200px'}}
+      />
+
+      <input
+        type="cf_id"
+        placeholder="Codeforces 아이디"
+        value={solved_id}
+        onChange={(e) => setCF_id(e.target.value)}
+        style={{marginBottom: '40px', width: '200px'}}
       />
 
       <button onClick={handleSignup}>가입하기</button>
