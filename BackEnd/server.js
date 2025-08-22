@@ -10,6 +10,9 @@ import setList from './routes/setList.js';
 import setDetail from './routes/setDetail.js';
 import setCreate from './routes/setCreate.js';
 import solveCheckRouter from "./routes/solveCheck.js";
+import { syncUserRatingsSafe } from './services/scoring.js';
+import cron from 'node-cron';
+import User from './models/User.js';
 
 dotenv.config();                    
 const app = express();               //  express 앱 객체 생성
@@ -41,4 +44,23 @@ app.listen(PORT, function(){
 // - get(경로, 실행할 코드)
 app.get('/', function(req, res){
     res.send('서버 정상 작동 중');
+});
+
+// 3:00(KST) 동기화 진행 - node-cron 라이브러리 활용
+cron.schedule('0 3 * * *', async () => {
+  console.log('[CRON] 03:00 전체 사용자 점수 동기화 시작');
+  try {
+    // - 전체 사용자 가져옴
+    const cursor = User.find({}).select('_id').lean().cursor();
+ 
+    // - 한 명씩 안전 호출 (내부에서 레이트리밋/백오프 적용)
+    for await (const u of cursor) {
+      await syncUserRatingsSafe(u._id, "daily");
+    }
+    console.log('[CRON] 전체 동기화 완료');
+  } catch (e) {
+    console.error('[CRON] 전체 동기화 실패:', e);
+  }
+}, {
+  timezone: 'Asia/Seoul'  // 서버 타임존이 UTC여도 KST 03:00에 실행
 });

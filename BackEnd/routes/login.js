@@ -2,8 +2,10 @@ import express from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
+import { syncUserRatingsSafe } from '../services/scoring.js';
 
 const router = express.Router();
+const inflight = new Set(); // 중복 실행 방지
 
 router.post('/', async (req, res) => {
   const { email, password } = req.body;
@@ -41,6 +43,21 @@ router.post('/', async (req, res) => {
       message: `환영합니다, ${user.nickname}님!`,
       token
     });
+
+    // 백그라운드에서 동작하고 있을 경우, 스킵
+    const key = String(user._id);
+    if (inflight.has(key)) return; 
+
+    // 로그인 시, 동기화 진행
+    inflight.add(key);
+    setImmediate(async () => {
+      try {
+        await syncUserRatingsSafe(user._id, "login");
+      } finally {
+        inflight.delete(key);
+      }
+    });
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: '서버 오류' });
