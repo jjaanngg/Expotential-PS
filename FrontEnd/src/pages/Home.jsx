@@ -24,7 +24,7 @@ const Home = () => {
   return (
     <div align="middle" style={{ paddingTop: '200px' }}>
       <h1>Expotential-PS</h1>
-      <button onClick={handleClick}>서버에서 메시지 받아오기!</button>
+      <button onClick={handleClick}>서버 작동 확인</button>
       <p>{message}</p>
     </div>
   );

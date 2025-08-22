@@ -6,6 +6,7 @@ import Signup from './pages/Signup';
 import UserList from './pages/UserList';
 import SetList from './pages/SetList';
 import SetDetail from './pages/SetDetail';
+import Profile from './pages/Profile';
 
 function App() {
   return (    
@@ -17,6 +18,7 @@ function App() {
         <Route path="/users" element={<UserList/>} />
         <Route path="/sets" element={<SetList />} />
         <Route path="/sets/:id" element={<SetDetail />} />
+        <Route path="/profile" element={<Profile />} />
       </Routes>
     </BrowserRouter>
   );

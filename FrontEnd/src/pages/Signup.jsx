@@ -77,8 +77,6 @@ const Signup = () => {
         style={{ marginBottom: '30px', width: '200px' }}
       />
 
-<<<<<<< Updated upstream
-=======
       <input
         type="solved_id"
         placeholder="Solved.ac 아이디"
@@ -103,7 +101,6 @@ const Signup = () => {
         style={{marginBottom: '40px', width: '200px'}}
       />
 
->>>>>>> Stashed changes
       <button onClick={handleSignup}>가입하기</button>
       <p>{message}</p>
     </div>
