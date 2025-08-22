@@ -77,6 +77,33 @@ const Signup = () => {
         style={{ marginBottom: '30px', width: '200px' }}
       />
 
+<<<<<<< Updated upstream
+=======
+      <input
+        type="solved_id"
+        placeholder="Solved.ac 아이디"
+        value={solved_id}
+        onChange={(e) => setSolved_id(e.target.value)}
+        style={{marginBottom: '10px', width: '200px'}}
+      />
+
+      <input
+        type="atcoder_id"
+        placeholder="Atcoder 아이디"
+        value={atcoder_id}
+        onChange={(e) => setAtcoder_id(e.target.value)}
+        style={{marginBottom: '10px', width: '200px'}}
+      />
+
+      <input
+        type="cf_id"
+        placeholder="Codeforces 아이디"
+        value={cf_id}
+        onChange={(e) => setCF_id(e.target.value)}
+        style={{marginBottom: '40px', width: '200px'}}
+      />
+
+>>>>>>> Stashed changes
       <button onClick={handleSignup}>가입하기</button>
       <p>{message}</p>
     </div>

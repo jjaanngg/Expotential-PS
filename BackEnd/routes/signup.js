@@ -1,3 +1,4 @@
+// routes/signup.js
 // ※ 기본 셋팅
 import express from 'express';
 const router = express.Router();            // 라우터 생성 -> 연결뿐만 아니라, 데이터 전달도 함
@@ -7,7 +8,7 @@ import bcrypt from 'bcrypt';                // 비밀번호 암호화를 제공�
 // ※ 회원가입 코드
 router.post("/", async(req,res) => {
     // - body에서 응답 가져옴
-    const {email, password, nickname} = req.body;
+    const {email, password, nickname, solved_id, atcoder_id, cf_id} = req.body;
     try{
         // - 이메일 & 닉네임 중복 확인
         const existingEmail = await User.findOne({email});
@@ -30,6 +31,9 @@ router.post("/", async(req,res) => {
             email,
             passwordHash,
             nickname,
+            solved_id,
+            atcoder_id,
+            cf_id,
             solvedRating: 0,
             codeforcesRating: 0,
             atcoderRating: 0,
