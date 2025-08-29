@@ -2,6 +2,7 @@
 import User from "../models/User.js";
 import axios from "axios";
 import Bottleneck from "bottleneck";
+import SyncFailure from "../models/SyncFailure.js";
 
 // ──────────────────────────────────────────────────────────
 // 레이트리밋
