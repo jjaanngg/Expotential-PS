@@ -18,6 +18,7 @@ import setCreate from './routes/setCreate.js';
 import solveCheckRouter from "./routes/solveCheck.js";
 import solveStatusRouter from './routes/solveStatus.js'; // solveStatusRouter import 추가
 import rankingRoute from './routes/ranking.js'; // rankingRoute import 추가
+import rewardRouter from "./routes/reward.js";
 
 
 // ※ 서비스 및 모델 import
@@ -47,6 +48,7 @@ app.use('/api/sets', setCreate);
 app.use("/api/solve-check", solveCheckRouter);
 app.use('/api/solve-status', solveStatusRouter);
 app.use('/api/ranking', rankingRoute);
+app.use("/api/reward", rewardRouter);
 
 console.log('[Check 3] DB 연결 시도 전');
 

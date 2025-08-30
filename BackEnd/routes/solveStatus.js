@@ -21,22 +21,47 @@ router.post('/', auth, async (req, res) => {
       return res.status(404).json({ message: '사용자를 찾을 수 없거나 solved.ac 아이디가 등록되지 않았습니다.' });
     }
 
-    // ✅ [수정됨] 사용자가 푼 문제 목록을 직접 가져오는 올바른 API 주소로 변경
-    const solvedAcRes = await axios.get(
-      `https://solved.ac/api/v3/search/problem?query=solved_by:${user.solved_id}`
-    );
-    
-    // ✅ [수정됨] API 응답 구조에 맞게 실제 문제 목록을 가져옴
-    const solvedProblems = solvedAcRes.data.items || [];
-    
-    const solvedProblemSet = new Set(solvedProblems.map(p => p.problemId));
+    // 필요 문제 집합 (숫자 통일)
+    const targetSet = new Set(problemIdsToCheck.map(v => Number(v)));
+    const foundSet = new Set(); // 이미 찾은 문제
+    const solvedSet = new Set(); // 최종 solved 판정
 
-    const results = problemIdsToCheck.map(pid => ({
+    // 페이지네이션으로 필요한 것만 찾기
+    let page = 1;
+    const size = 100; // 최대치로 당겨서 요청 수 줄이기
+    const maxPages = 50; // 안전한 상한 (과도한 루프 방지)
+
+    while (page <= maxPages && foundSet.size < targetSet.size) {
+      const url = `https://solved.ac/api/v3/search/problem?query=solved_by:${encodeURIComponent(
+        user.solved_id
+      )}&page=${page}&size=${size}`;
+
+      const { data } = await axios.get(url, {
+        headers: { "User-Agent": "ExpotentialPS/1.0 (+server)" },
+        timeout: 8000,
+      });
+
+      const items = Array.isArray(data?.items) ? data.items : [];
+      if (items.length === 0) break; // 더 이상 없음
+
+      for (const p of items) {
+        const pid = Number(p.problemId);
+        if (targetSet.has(pid)) {
+          solvedSet.add(pid);
+          foundSet.add(pid);
+          if (foundSet.size === targetSet.size) break;
+        }
+      }
+
+      page += 1;
+    }
+
+    const results = Array.from(targetSet).map((pid) => ({
       problemId: pid,
-      solved: solvedProblemSet.has(pid)
+      solved: solvedSet.has(pid),
     }));
-    
-    res.status(200).json({ results });
+
+    return res.json({ results });
 
   } catch (err) {
     console.error('풀이 상태 확인 중 오류:', err);

@@ -52,6 +52,30 @@ export default function Profile() {
             <div style={{ fontSize: 12, color: '#666' }}>닉네임</div>
             <div style={{ fontSize: 22, fontWeight: 800 }}>{user.nickname}</div>
           </Box>
+          <Box style={{ marginBottom: 16 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div>
+                <div style={{ fontSize: 12, color: '#666' }}>보유 코인</div>
+                <div style={{ fontSize: 26, fontWeight: 900 }}>
+                  {user.currency ?? 0}
+                </div>
+              </div>
+              <div
+                aria-hidden
+                style={{
+                  fontSize: 24,
+                  background: '#FFF3CD',
+                  color: '#B58100',
+                  border: '1px solid #FFE69C',
+                  padding: '6px 10px',
+                  borderRadius: 10,
+                  fontWeight: 800
+                }}
+              >
+                🪙
+              </div>
+            </div>
+          </Box>
           <Box>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
               <div style={{ fontSize: 12, color: '#666' }}>통합 점수</div>

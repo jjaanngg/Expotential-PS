@@ -13,6 +13,26 @@ const SetDetail = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [solvedMap, setSolvedMap] = useState({});
+  const [claimedMap, setClaimedMap] = useState({});
+
+  const handleClaim = async (problemId) => {
+    try {
+      const res = await api.post("/api/reward/claim", { problemId });
+      alert(`보상 지급 완료! 현재 보유 코인: ${res.data.currency}`);
+      setClaimedMap(prev => ({ ...prev, [problemId]: true }));
+    } catch (err) {
+      if (err?.response?.status === 409) {
+        alert("이미 보상받은 문제입니다.");
+        setClaimedMap(prev => ({ ...prev, [problemId]: true }));
+        return;
+      }
+      if (err?.response?.status === 401) {
+        alert("로그인이 필요합니다."); navigate("/login"); return;
+      }
+      console.error("보상 지급 실패:", err);
+      alert("보상 처리 중 오류 발생");
+    }
+  };
 
   // 세트 상세 정보 로드
   useEffect(() => {
@@ -141,7 +161,23 @@ const SetDetail = () => {
                   <td style={{ padding: 8, borderBottom: '1px solid #f0f0f0' }}>{p.solvedCount?.toLocaleString?.() ?? p.solvedCount}</td>
                   <td style={{ padding: 8, borderBottom: '1px solid #f0f0f0' }}>
                     {solved === true ? (
-                      <span style={{ color: '#14804a', fontWeight: 700 }}>해결됨</span>
+                      <>
+                        <span style={{ color: '#14804a', fontWeight: 700, marginRight: 8 }}>해결됨</span>
+                        <button
+                          onClick={() => handleClaim(p.problemId)}
+                          disabled={claimedMap[p.problemId] === true}
+                          style={{
+                            padding: '4px 8px',
+                            borderRadius: '5px',
+                            border: '1px solid #aaa',
+                            cursor: claimedMap[p.problemId] ? 'not-allowed' : 'pointer',
+                            background: claimedMap[p.problemId] ? '#f0f0f0' : '#e0ffe0',
+                            fontWeight: 600
+                          }}
+                        >
+                          {claimedMap[p.problemId] ? '지급 완료' : '보상 받기'}
+                        </button>
+                      </>
                     ) : solved === false ? (
                       <span style={{ color: '#8a0000', fontWeight: 700 }}>미해결</span>
                     ) : (
