@@ -18,7 +18,10 @@ const userSchema = new mongoose.Schema({
     // 코인
     currency: Number,   
     // 회원가입 날짜       
-    createdAt: Date               
+    createdAt: Date,
+    // 풀이 기록 동기화를 위한 필드
+    solvedProblems: { type: [Number], default: [] },
+    lastSyncAt: Date,
 });
 
 userSchema.index({ totalRating: -1 });

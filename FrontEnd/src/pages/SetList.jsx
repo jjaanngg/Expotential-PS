@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api'; // axios 대신 api를 import
 
 const SetList = () => {
   const [sets, setSets] = useState([]);
@@ -8,12 +8,13 @@ const SetList = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    axios.get('/api/sets')
+    api.get('/api/sets') // axios 대신 api 사용
       .then(res => setSets(res.data))
       .catch(err => console.error('세트 불러오기 실패:', err))
       .finally(() => setLoading(false));
   }, []);
 
+  // ... (handleClick, return 부분은 이전과 동일)
   const handleClick = (id) => {
     navigate(`/sets/${id}`);
   };

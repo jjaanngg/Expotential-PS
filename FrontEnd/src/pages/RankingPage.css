@@ -1,0 +1,66 @@
+/* src/pages/RankingPage.css */
+
+.ranking-container {
+  width: 90%;
+  max-width: 1000px;
+  margin: 40px auto;
+  font-family: sans-serif;
+}
+
+.ranking-container h1 {
+  margin-bottom: 30px;
+}
+
+.ranking-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.ranking-table th, .ranking-table td {
+  padding: 15px 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.ranking-table th {
+  font-weight: 600;
+  color: #555;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 40px;
+}
+
+.pagination button {
+  background-color: white;
+  border: 1px solid #ddd;
+  padding: 8px 12px;
+  margin: 0 5px;
+  cursor: pointer;
+}
+
+.pagination button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.pagination span {
+  margin: 0 10px;
+  font-weight: bold;
+}
+
+.loading-container {
+  text-align: center;
+  padding: 50px;
+  font-size: 1.2rem;
+}
+
+/*추가됨*/
+.pagination button.active {
+  background-color: #007bff;
+  color: white;
+  border-color: #007bff;
+}

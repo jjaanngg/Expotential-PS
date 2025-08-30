@@ -100,7 +100,7 @@ const Signup = () => {
       <input
         type="cf_id"
         placeholder="Codeforces 아이디"
-        value={solved_id}
+        value={cf_id}
         onChange={(e) => setCF_id(e.target.value)}
         style={{marginBottom: '40px', width: '200px'}}
       />
