@@ -1,27 +1,44 @@
 // src/pages/SetDetail.jsx
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api'; // ✅ axios 대신 api를 import 합니다.
 
 const SetDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  // 세트 정보
   const [title, setTitle] = useState('');
   const [problems, setProblems] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  // ✅ 변경됨: 보상 처리용 상태 제거 → 세트 전체 새로고침 상태로 변경
-  const [refreshing, setRefreshing] = useState(false);   // 새로고침 버튼 로딩 상태
+  const [refreshing, setRefreshing] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
-  const [solvedMap, setSolvedMap] = useState({});        // { problemId: true/false }
+  const [solvedMap, setSolvedMap] = useState({});
+  const [claimedMap, setClaimedMap] = useState({});
 
-  // 세트 상세 로드
+  const handleClaim = async (problemId) => {
+    try {
+      const res = await api.post("/api/reward/claim", { problemId });
+      alert(`보상 지급 완료! 현재 보유 코인: ${res.data.currency}`);
+      setClaimedMap(prev => ({ ...prev, [problemId]: true }));
+    } catch (err) {
+      if (err?.response?.status === 409) {
+        alert("이미 보상받은 문제입니다.");
+        setClaimedMap(prev => ({ ...prev, [problemId]: true }));
+        return;
+      }
+      if (err?.response?.status === 401) {
+        alert("로그인이 필요합니다."); navigate("/login"); return;
+      }
+      console.error("보상 지급 실패:", err);
+      alert("보상 처리 중 오류 발생");
+    }
+  };
+
+  // 세트 상세 정보 로드
   useEffect(() => {
     setErrorMsg('');
     setLoading(true);
-    axios.get(`/api/sets/${id}`)
+    api.get(`/api/sets/${id}`) // ✅ axios.get을 api.get으로 변경
       .then(res => {
         setTitle(res.data.title || '');
         setProblems(res.data.problems || []);
@@ -33,7 +50,41 @@ const SetDetail = () => {
       .finally(() => setLoading(false));
   }, [id]);
 
-  // 티어 텍스트 변환 (변경 없음)
+  // 세트 전체 새로고침 (모든 문제 풀이 여부 확인)
+  const handleRefreshAll = async () => {
+    setErrorMsg('');
+    if (!allProblemIds.length) return;
+
+    try {
+      setRefreshing(true);
+      // ✅ axios.post를 api.post로 변경 (api가 토큰을 자동으로 포함해줍니다)
+      const res = await api.post('/api/solve-status', { problems: allProblemIds });
+
+      const resultArray = res?.data?.results ?? [];
+      const next = {};
+      for (const r of resultArray) {
+        if (r && typeof r.problemId === 'number') {
+          next[r.problemId] = !!r.solved;
+        }
+      }
+      setSolvedMap(next);
+    } catch (err) {
+      console.error('세트 새로고침 실패:', err);
+      setErrorMsg('풀이 여부 확인 중 오류가 발생했습니다.');
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
+  // -------------------------------------------------------------------
+  // 아래의 나머지 코드들은 수정할 필요가 없습니다. (useMemo, tierText, return 부분)
+  // -------------------------------------------------------------------
+  
+  const allProblemIds = useMemo(
+    () => problems.map(p => p.problemId).filter(Boolean),
+    [problems]
+  );
+  
   const tierText = (tier) => {
     const groups = [
       { name: 'Bronze', range: [1, 5] },
@@ -51,53 +102,8 @@ const SetDetail = () => {
     return 'Unrated';
   };
 
-  // ✅ 변경됨: problemId 단위 보상 버튼 → 세트 전체 problemId 추출
-  const allProblemIds = useMemo(
-    () => problems.map(p => p.problemId).filter(Boolean),
-    [problems]
-  );
-
-  // ✅ 변경됨: handleClaim → handleRefreshAll
-  // 세트 전체 새로고침 (모든 문제 풀이 여부 확인)
-  const handleRefreshAll = async () => {
-    setErrorMsg('');
-    const token = localStorage.getItem('token');
-    if (!token) {
-      alert('로그인이 필요합니다.');
-      navigate('/login');
-      return;
-    }
-    if (!allProblemIds.length) return;
-
-    try {
-      setRefreshing(true);
-      // ✅ 변경됨: /api/solve-check (문제 단일) → /api/solve-status (세트 전체)
-      const res = await axios.post(
-        '/api/solve-status',
-        { problems: allProblemIds },
-        { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } }
-      );
-
-      // ✅ 변경됨: 응답 파싱 로직 (results 배열 기반)
-      const resultArray = res?.data?.results ?? [];
-      const next = {};
-      for (const r of resultArray) {
-        if (r && typeof r.problemId === 'number') {
-          next[r.problemId] = !!r.solved;
-        }
-      }
-      setSolvedMap(next);
-    } catch (err) {
-      console.error('세트 새로고침 실패:', err);
-      setErrorMsg('풀이 여부 확인 중 오류가 발생했습니다.');
-    } finally {
-      setRefreshing(false);
-    }
-  };
-
   return (
     <div style={{ padding: '40px', textAlign: 'center' }}>
-      {/* 뒤로가기 버튼 (변경 없음) */}
       <button onClick={() => navigate('/sets')} style={{
         marginBottom: '20px',
         padding: '8px 16px',
@@ -112,7 +118,6 @@ const SetDetail = () => {
       <h2>{title}</h2>
       {errorMsg && <p style={{ color: 'crimson' }}>{errorMsg}</p>}
 
-      {/* ✅ 변경됨: 개별 버튼 → 세트 전체 새로고침 버튼 */}
       {!loading && (
         <div style={{ marginBottom: 16 }}>
           <button
@@ -132,7 +137,6 @@ const SetDetail = () => {
         </div>
       )}
 
-      {/* ✅ 변경됨: 표의 마지막 컬럼 (보상 버튼 → 풀이 상태 표시) */}
       {loading ? (
         <p>문제 불러오는 중...</p>
       ) : (
@@ -157,7 +161,23 @@ const SetDetail = () => {
                   <td style={{ padding: 8, borderBottom: '1px solid #f0f0f0' }}>{p.solvedCount?.toLocaleString?.() ?? p.solvedCount}</td>
                   <td style={{ padding: 8, borderBottom: '1px solid #f0f0f0' }}>
                     {solved === true ? (
-                      <span style={{ color: '#14804a', fontWeight: 700 }}>해결됨</span>
+                      <>
+                        <span style={{ color: '#14804a', fontWeight: 700, marginRight: 8 }}>해결됨</span>
+                        <button
+                          onClick={() => handleClaim(p.problemId)}
+                          disabled={claimedMap[p.problemId] === true}
+                          style={{
+                            padding: '4px 8px',
+                            borderRadius: '5px',
+                            border: '1px solid #aaa',
+                            cursor: claimedMap[p.problemId] ? 'not-allowed' : 'pointer',
+                            background: claimedMap[p.problemId] ? '#f0f0f0' : '#e0ffe0',
+                            fontWeight: 600
+                          }}
+                        >
+                          {claimedMap[p.problemId] ? '지급 완료' : '보상 받기'}
+                        </button>
+                      </>
                     ) : solved === false ? (
                       <span style={{ color: '#8a0000', fontWeight: 700 }}>미해결</span>
                     ) : (
@@ -171,7 +191,6 @@ const SetDetail = () => {
         </table>
       )}
 
-      {/* ✅ 변경됨: 완료 카운트 → “확인된 문제 수”로 용도 변경 */}
       {!loading && problems.length > 0 && (
         <p style={{ marginTop: 16 }}>
           확인된 문제 수: <b>{Object.keys(solvedMap).length}</b> / {problems.length}

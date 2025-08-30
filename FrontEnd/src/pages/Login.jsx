@@ -1,74 +1,68 @@
-//Login.jsx
-import React, {useState} from 'react'; // 상태 저장 기능 이용 useState
-import { useNavigate } from 'react-router-dom';  // URL에 따라서 화면 이동시켜야 하기 때문에 useNavigate 사용
+// src/pages/Login.jsx
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
+const Login = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [message, setMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(false); // ✅ 1. 로딩 상태 변수 추가
+  const navigate = useNavigate();
 
-const Login = () => {<div className=""></div>
-		// 변수 선언하고 변수 값 바꾸는 함수 선언하고 반복
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [message, setMessage] = useState('');
-    const navigate = useNavigate();
-		
-		// 변수 선언하고 변수 값 바꾸는 함수 선언하고 반복
-    const handleLogin = async () => { // await 사용할거라 async 조건 추가
-		    // 여기서 fetch는 브라우저에서 해당 서버에 요청을 보내는 함수, GEt이나 POSt. 여기서는 POST임
-        try {
-          const res = await fetch('/login', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({email, password}),
-            credentials: 'include', // 추가된 줄
-        });
+  const handleLogin = async () => {
+    setIsLoading(true); // ✅ 2. 로그인 시작 -> 로딩 상태 true
+    setMessage(''); // 이전 메시지 초기화
 
-        const data = await res.json();
-        if (res.ok) {
-          localStorage.setItem('token', data.token);
-          alert('Login Completed');
-          alert(data.message);
-          navigate('/'); // 로그인 성공 시 홈으로 이동.
-        }
-        else {
-          setMessage('Login Fail: Wrong Password');
-        }
-      }  catch (error) {
-          console.error('Login error:', error);
-          setMessage('Login 요청 중 오류 발생');
-        }
-    };
-		// return은 코드 전체 함수가 화면에 무엇을 보여줄지 반환하는 것, HTML과 매우 유사함
-		// input은 입력받는 박스 만드는 역할
-    return (
-      <div style={{ 
-          display: 'flex', 
-          flexDirection: 'column',
-          justifyContent: 'center',
-          alignItems: 'center',
-          height: '80vh'
-      }}>
+    try {
+      const res = await axios.post('/login', { email, password });
+      
+      localStorage.setItem('token', res.data.token);
+      alert(res.data.message || '로그인 및 점수 동기화 성공!');
+      navigate('/');
+    } catch (error) {
+      console.error('Login error:', error);
+      setMessage(error.response?.data?.message || '로그인 요청 중 오류가 발생했습니다.');
+    } finally {
+      setIsLoading(false); // ✅ 3. 요청 완료 (성공/실패 무관) -> 로딩 상태 false
+    }
+  };
 
-        <h1>로그인</h1>
-        <input
-          type="email"
-          placeholder="이메일"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          style={{ marginBottom: '20px', width: '200px' }}
-        />
+  return (
+    <div style={{ 
+        display: 'flex', 
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '80vh'
+    }}>
+      <h1>로그인</h1>
+      <input
+        type="email"
+        placeholder="이메일"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        style={{ marginBottom: '20px', width: '200px' }}
+        disabled={isLoading} // 로딩 중에는 입력 방지
+      />
+      <input
+        type="password"
+        placeholder="비밀번호"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        style={{ marginBottom: '40px', width: '200px' }}
+        disabled={isLoading} // 로딩 중에는 입력 방지
+      />
 
-        <input
-          type="password"
-          placeholder="비밀번호"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          style={{ marginBottom: '40px', width: '200px' }}
-        />
+      {/* ✅ 4. 로딩 상태에 따라 버튼 내용 변경 및 비활성화 */}
+      <button onClick={handleLogin} disabled={isLoading}>
+        {isLoading ? '로그인 및 점수 동기화 중...' : '로그인'}
+      </button>
 
-        <button onClick={handleLogin}>로그인</button>
-        <p>{message}</p>
-      </div>
-    );
+      {/* 메시지가 있을 때만 보이도록 수정 */}
+      {message && <p style={{ color: 'red', marginTop: '20px' }}>{message}</p>}
+    </div>
+  );
 };
 
-// App 컴포넌트를 외부에서도 사용할 수 있게 export (기본 export)
 export default Login;
