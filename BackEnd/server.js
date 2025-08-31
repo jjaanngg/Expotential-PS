@@ -27,7 +27,7 @@ import User from './models/User.js';
 
 dotenv.config();
 const app = express();
-const PORT = 4000;
+const PORT = process.env.PORT || 4000;
 
 console.log('[Check 1] 서버 파일 시작');
 
